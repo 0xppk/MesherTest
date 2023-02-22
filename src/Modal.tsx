@@ -1,4 +1,11 @@
-import { Dispatch, SetStateAction, RefObject, useRef, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  RefObject,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import useClickOutside from "../utils/useClickOutside";
 import { useQuery } from "react-query";
 import { useLocalStorage } from "../utils/useStorage";
@@ -46,8 +53,11 @@ export default function Modal({
 
   // fuse 검색 필터링
   const fuse = data && new Fuse(data, { includeScore: true, keys: ["symbol"] });
-  const filteredData =
-    query === "" ? data : fuse?.search(query).map((res) => ({ ...res.item }));
+  const filteredData = useMemo(
+    () =>
+      query === "" ? data : fuse?.search(query).map((res) => ({ ...res.item })),
+    [query, data, fuse],
+  );
 
   // JSX
   return (
@@ -68,7 +78,7 @@ export default function Modal({
               placeholder="Search name"
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => setQuery(e.target.value.toUpperCase())}
             />
             <div className="flex flex-wrap justify-start gap-x-4">
               {value instanceof Array &&
@@ -80,7 +90,7 @@ export default function Modal({
                         token.symbol === "" ? "opacity-0" : "opacity-100"
                       } ${
                         token.id === selectedToken[modalIndex]?.id
-                          ? "bg-amber-100 pointer-events-none"
+                          ? "bg-rose-200 pointer-events-none"
                           : ""
                       }`}
                     >
@@ -140,6 +150,8 @@ export default function Modal({
 
 // 최신토큰목록 유지
 function unShift(array: Token[], value: Token) {
+  console.log("클릭했습니다");
+
   const length = array.length;
   for (let i = length - 1; i > 0; i--) {
     array[i] = array[i - 1];
